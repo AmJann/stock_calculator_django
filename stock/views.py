@@ -71,7 +71,7 @@ class StockCreate(APIView):
         serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class StockCreate(APIView):
+class StockCreateOne(APIView):
     def post(self, request):
         investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
@@ -118,6 +118,29 @@ class StockCreate(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from rest_framework import generics
+
+class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.DestroyAPIView, generics.ListAPIView):
+    serializer_class = StockSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        list_name = self.kwargs['list_name']
+        return Stock.objects.filter(list_name=list_name)
+
+    def update(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class StockList(generics.ListAPIView):
