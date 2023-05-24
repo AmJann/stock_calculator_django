@@ -55,6 +55,7 @@ class StockCreate(APIView):
             serializer = StockSerializer(data={
                 'list_name': list_name,
                 'stock_name': stock_name,
+                'allocation': allocation,
                 'investment_date': investment_date,
                 'initial_investment': investment,
                 'price_of_stock': price_of_stock,
