@@ -154,12 +154,12 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
 class StockList(generics.ListAPIView):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
-    permission_classes = [IsAuthenticated]
+
 
 class StockDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
-    permission_classes = [IsAuthenticated]
+
 
 class Login(APIView):
     def post(self, request):
