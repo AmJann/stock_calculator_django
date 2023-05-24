@@ -71,6 +71,55 @@ class StockCreate(APIView):
         serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+class StockCreate(APIView):
+    def post(self, request):
+        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
+        initial_balance = float(request.data.get('initial_balance'))
+        stock_name = request.data.get('stock_name')
+        allocation = request.data.get('allocation')
+        user_stock = int(request.data.get('user_stock'))
+        list_name = request.data.get('list_name')
+
+        # Make API call to retrieve stock price
+        url = os.environ['STOCK_URL']
+        api_key = os.environ['STOCK_API_KEY']
+        params = {
+            'access_key': api_key
+        }
+        price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
+        if price_response.status_code == 200:
+            data = price_response.json()
+            if 'open' in data:
+                price_of_stock = data['open']
+            else:
+                # Handle the case when stock price data is not available
+                error_message = f"Failed to retrieve stock price data. Response content: {price_response.content}"
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Handle the case when stock price API call fails
+            error_message = f"Failed to retrieve stock price. Response content: {price_response.content}"
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
+
+        investment = initial_balance * allocation
+        number_stocks = investment / price_of_stock
+
+        serializer = StockSerializer(data={
+            'list_name': list_name,
+            'stock_name': stock_name,
+            'allocation': allocation,
+            'investment_date': investment_date,
+            'initial_investment': investment,
+            'price_of_stock': price_of_stock,
+            'number_stocks': number_stocks,
+            'user_stock': user_stock
+        })
+        if serializer.is_valid():
+            stock = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class StockList(generics.ListAPIView):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer

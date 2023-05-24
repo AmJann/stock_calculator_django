@@ -3,6 +3,7 @@ from .views import *
 
 urlpatterns = [
     path('stocks/create/', StockCreate.as_view(), name='stock-create'),
+    path('stock/create/', StockCreate.as_view(), name='stock-create'),
     path('stocks/', StockList.as_view(), name='stock-list'),
     path('stocks/<int:pk>/', StockDetail.as_view(), name='stock-detail'),
     path('login/', Login.as_view(), name='login'),
