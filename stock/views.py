@@ -16,6 +16,8 @@ import requests
 
 
 
+from django.shortcuts import get_object_or_404
+
 class StockCreate(APIView):
     def post(self, request):
         investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
@@ -23,6 +25,11 @@ class StockCreate(APIView):
         stock_data = request.data.get('stocks', [])
         user_stock = int(request.data.get('user_stock'))
         list_name = request.data.get('list_name')
+
+        # Check if the user already has a list with the same name
+        existing_list = Stock.objects.filter(user_stock=user_stock, list_name=list_name).exists()
+        if existing_list:
+            return Response({'error': 'List name already exists for the user.'}, status=status.HTTP_400_BAD_REQUEST)
 
         stocks = []
         for stock in stock_data:
@@ -70,6 +77,7 @@ class StockCreate(APIView):
         created_stocks = Stock.objects.bulk_create(stocks)
         serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class StockCreateOne(APIView):
     def post(self, request):
