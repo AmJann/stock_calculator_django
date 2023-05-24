@@ -10,21 +10,19 @@ import os
 import environ
 from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
-
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 import requests
 
 
-class StockCreateView(APIView):
+
+class StockCreate(APIView):
     def post(self, request):
         investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_data = request.data.get('stocks', [])
         user_stock = int(request.data.get('user_stock'))
+        list_name = request.data.get('list_name')
 
         stocks = []
         for stock in stock_data:
@@ -35,14 +33,13 @@ class StockCreateView(APIView):
             url = os.environ['STOCK_URL']
             api_key = os.environ['STOCK_API_KEY']
             params = {
-                'access_key': '7acc9a4809f1f6db994b674a1caf65f2'
+                'access_key': api_key
             }
-            price_response = requests.get(f"http://api.marketstack.com/v1/tickers/{stock_name}/eod/{investment_date}", params)
+            price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
             if price_response.status_code == 200:
                 data = price_response.json()
                 if 'open' in data:
                     price_of_stock = data['open']
-                    Response(price_of_stock)
                 else:
                     # Handle the case when stock price data is not available
                     error_message = f"Failed to retrieve stock price data. Response content: {price_response.content}"
@@ -56,6 +53,7 @@ class StockCreateView(APIView):
             number_stocks = investment / price_of_stock
 
             serializer = StockSerializer(data={
+                'list_name': list_name,
                 'stock_name': stock_name,
                 'investment_date': investment_date,
                 'initial_investment': investment,
@@ -72,21 +70,42 @@ class StockCreateView(APIView):
         serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+class StockList(generics.ListAPIView):
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer
+    permission_classes = [IsAuthenticated]
+
+class StockDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer
+    permission_classes = [IsAuthenticated]
+
+class Login(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class Logout(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'detail': 'Logged out'})
 
 
-
-
-
-
-
-class RegistrationView(APIView):
+class Registration(APIView):
     def post(self, request):
         User = get_user_model()
         username = request.data.get('username')
         password = request.data.get('password')
         user = User.objects.create_user(username=username, password=password)
 
-class CheckUserLoggedInView(APIView):
+class CheckUserLoggedIn(APIView):
     def get(self, request):
         user = request.user
         if user.is_authenticated:

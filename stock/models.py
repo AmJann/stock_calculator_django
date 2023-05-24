@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 
 
 class Stock(models.Model):
+    list_name = stock_name = models.CharField(max_length=100)
     stock_name = models.CharField(max_length=100)
     investment_date = models.DateField()
     initial_investment = models.FloatField()
