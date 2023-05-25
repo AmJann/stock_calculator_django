@@ -13,9 +13,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 import requests
-
-
-
 from django.shortcuts import get_object_or_404
 
 class StockCreate(APIView):
@@ -74,8 +71,6 @@ class StockCreate(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        created_stocks = Stock.objects.bulk_create(stocks)
-        serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -154,12 +149,12 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
 class StockList(generics.ListAPIView):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
-    permission_classes = [IsAuthenticated]
+
 
 class StockDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
-    permission_classes = [IsAuthenticated]
+
 
 class Login(APIView):
     def post(self, request):
@@ -185,6 +180,7 @@ class Registration(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = User.objects.create_user(username=username, password=password)
+        return Response({'message': 'Registration successful'})
 
 class CheckUserLoggedIn(APIView):
     def get(self, request):

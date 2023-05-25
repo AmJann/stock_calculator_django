@@ -32,6 +32,8 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 ALLOWED_HOSTS = ['*']
 
 
@@ -92,8 +94,7 @@ DATABASES = {
         'NAME': 'stock',
         'USER': 'stockuser',
         'PASSWORD': 'stock',
-        'HOST': 'localhost',
-        'PORT': '5432'
+        'HOST': 'localhost'
     }
 }
 
