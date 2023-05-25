@@ -180,6 +180,7 @@ class Registration(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         user = User.objects.create_user(username=username, password=password)
+        return Response({'message': 'Registration successful'})
 
 class CheckUserLoggedIn(APIView):
     def get(self, request):
