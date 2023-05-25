@@ -21,7 +21,7 @@ load_dotenv()
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
-    )
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -86,20 +86,20 @@ WSGI_APPLICATION = 'stock_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'stock',
-#         'USER': 'stockuser',
-#         'PASSWORD': 'stock',
-#         'HOST': 'localhost'
-#     }
-# }
-
 DATABASES = {
-  'default': dj_database_url.config(conn_max_age=600)
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'stock',
+        'USER': 'stockuser',
+        'PASSWORD': 'stock',
+        'HOST': 'localhost',
+        'PORT': '5432'
+    }
 }
 
+# DATABASES = {
+#   'default': dj_database_url.config(conn_max_age=600)
+# }
 
 
 # Password validation
@@ -137,15 +137,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT=os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-STATICFILES_STORAGE =  'django.contrib.staticfiles.storage.StaticFilesStorage'
-
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
     ]
 }
 # Default primary key field type
