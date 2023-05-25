@@ -71,8 +71,6 @@ class StockCreate(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        created_stocks = Stock.objects.bulk_create(stocks)
-        serializer = StockSerializer(created_stocks, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
