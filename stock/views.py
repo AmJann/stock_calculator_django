@@ -13,9 +13,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 import requests
-
-
-
 from django.shortcuts import get_object_or_404
 
 class StockCreate(APIView):
