@@ -143,8 +143,8 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        list_name = self.kwargs['list_name']
-        return Stock.objects.filter(list_name=list_name)
+        list_id = self.kwargs['list_id']
+        return Stock.objects.filter(list_id=list_id)
 
     def update(self, request, *args, **kwargs):
         queryset = self.get_queryset()
