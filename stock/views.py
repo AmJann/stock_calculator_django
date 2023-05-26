@@ -148,19 +148,26 @@ class StockCreateOne(APIView):
 
 class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.DestroyAPIView, generics.ListAPIView):
     serializer_class = StockSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        list_name = self.kwargs['list_name']
-        return Stock.objects.filter(list_name=list_name)
+        list_id = self.kwargs['list_id']
+        return Stock.objects.filter(list_id=list_id)
 
-    def update(self, request, *args, **kwargs):
+    def partial_update(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(
-            queryset, data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        stocks_data = request.data
+
+        for stock_data in stocks_data:
+            stock_id = stock_data.get('id')
+            if stock_id:
+                stock = queryset.filter(id=stock_id).first()
+                if stock:
+                    serializer = self.get_serializer(
+                        stock, data=stock_data, partial=True)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+
+        return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         queryset = self.get_queryset()
