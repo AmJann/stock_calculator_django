@@ -19,19 +19,34 @@ from django.db import transaction
 from django.utils.crypto import get_random_string
 
 
+from django.contrib.auth.models import User
+
+
+from django.contrib.auth.models import User
+
+
 class StockCreate(APIView):
     def post(self, request):
-        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
+        investment_date = datetime.strptime(
+            request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_data = request.data.get('stocks', [])
-        user_stock = int(request.data.get('user_stock'))
+        user_stock_id = int(request.data.get('user_stock'))
+
+        # Retrieve the User instance based on the user_stock_id
+        try:
+            user_stock = User.objects.get(id=user_stock_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+
         list_name = request.data.get('list_name')
-        
+
         # Generate a random list_id
         list_id = get_random_string(length=16)
 
         # Check if the user already has a list with the same list_id
-        existing_list = Stock.objects.filter(user_stock=user_stock, list_id=list_id).exists()
+        existing_list = Stock.objects.filter(
+            user_stock=user_stock, list_id=list_id).exists()
         if existing_list:
             return Response({'error': 'List ID already exists for the user.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -46,7 +61,8 @@ class StockCreate(APIView):
             params = {
                 'access_key': api_key
             }
-            price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
+            price_response = requests.get(
+                f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
             if price_response.status_code == 200:
                 data = price_response.json()
                 if 'open' in data:
@@ -65,33 +81,43 @@ class StockCreate(APIView):
 
             serializer = StockSerializer(data={
                 'list_name': list_name,
-                'list_id': list_id,  # Add the list_id to the serializer data
+                'list_id': list_id,
                 'stock_name': stock_name,
                 'allocation': allocation,
                 'investment_date': investment_date,
                 'initial_investment': investment,
                 'price_of_stock': price_of_stock,
                 'number_stocks': number_stocks,
-                'user_stock': user_stock
+                'user_stock': user_stock_id,  # Use the primary key value of the User instance
             })
             if serializer.is_valid():
                 stocks.append(serializer.validated_data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Use a transaction to ensure atomicity when creating the stocks
         with transaction.atomic():
-            Stock.objects.bulk_create([
-                Stock(**stock_data) for stock_data in stocks
+            created_stocks = Stock.objects.bulk_create([
+                Stock(
+                    list_name=stock_data['list_name'],
+                    list_id=stock_data['list_id'],
+                    stock_name=stock_data['stock_name'],
+                    allocation=stock_data['allocation'],
+                    investment_date=stock_data['investment_date'],
+                    initial_investment=stock_data['initial_investment'],
+                    price_of_stock=stock_data['price_of_stock'],
+                    number_stocks=stock_data['number_stocks'],
+                    user_stock=user_stock,
+                ) for stock_data in stocks
             ])
 
-        return Response("Stocks created successfully", status=status.HTTP_201_CREATED)
-
+        serializer = StockSerializer(created_stocks, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class StockCreateOne(APIView):
     def post(self, request):
-        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
+        investment_date = datetime.strptime(
+            request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_name = request.data.get('stock_name')
         allocation = request.data.get('allocation')
@@ -104,7 +130,8 @@ class StockCreateOne(APIView):
         params = {
             'access_key': api_key
         }
-        price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
+        price_response = requests.get(
+            f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
         if price_response.status_code == 200:
             data = price_response.json()
             if 'open' in data:
@@ -138,7 +165,6 @@ class StockCreateOne(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.DestroyAPIView, generics.ListAPIView):
     serializer_class = StockSerializer
 
@@ -156,7 +182,8 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
             if stock_id:
                 stock = queryset.filter(id=stock_id).first()
                 if stock:
-                    serializer = self.get_serializer(stock, data=stock_data, partial=True)
+                    serializer = self.get_serializer(
+                        stock, data=stock_data, partial=True)
                     serializer.is_valid(raise_exception=True)
                     updated_stock = serializer.save()
                     updated_stocks.append(updated_stock)
@@ -169,8 +196,6 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
         queryset = self.get_queryset()
         queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 
 
 class StockList(generics.ListAPIView):
@@ -195,6 +220,7 @@ class Login(APIView):
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
 class Logout(APIView):
     def post(self, request):
         logout(request)
@@ -208,6 +234,7 @@ class Registration(APIView):
         password = request.data.get('password')
         user = User.objects.create_user(username=username, password=password)
         return Response({'message': 'Registration successful'})
+
 
 class CheckUserLoggedIn(APIView):
     def get(self, request):
