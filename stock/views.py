@@ -15,6 +15,9 @@ from datetime import datetime
 import requests
 from django.shortcuts import get_object_or_404
 
+from django.db import transaction
+from django.utils.crypto import get_random_string
+
 class StockCreate(APIView):
     def post(self, request):
         investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
@@ -22,11 +25,14 @@ class StockCreate(APIView):
         stock_data = request.data.get('stocks', [])
         user_stock = int(request.data.get('user_stock'))
         list_name = request.data.get('list_name')
+        
+        # Generate a random list_id
+        list_id = get_random_string(length=16)
 
-        # Check if the user already has a list with the same name
-        existing_list = Stock.objects.filter(user_stock=user_stock, list_name=list_name).exists()
+        # Check if the user already has a list with the same list_id
+        existing_list = Stock.objects.filter(user_stock=user_stock, list_id=list_id).exists()
         if existing_list:
-            return Response({'error': 'List name already exists for the user.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'List ID already exists for the user.'}, status=status.HTTP_400_BAD_REQUEST)
 
         stocks = []
         for stock in stock_data:
@@ -58,6 +64,7 @@ class StockCreate(APIView):
 
             serializer = StockSerializer(data={
                 'list_name': list_name,
+                'list_id': list_id,  # Add the list_id to the serializer data
                 'stock_name': stock_name,
                 'allocation': allocation,
                 'investment_date': investment_date,
@@ -67,11 +74,18 @@ class StockCreate(APIView):
                 'user_stock': user_stock
             })
             if serializer.is_valid():
-                stocks.append(serializer.save())
+                stocks.append(serializer.validated_data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Use a transaction to ensure atomicity when creating the stocks
+        with transaction.atomic():
+            Stock.objects.bulk_create([
+                Stock(**stock_data) for stock_data in stocks
+            ])
+
+        return Response("Stocks created successfully", status=status.HTTP_201_CREATED)
+
 
 
 class StockCreateOne(APIView):
