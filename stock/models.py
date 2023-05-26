@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 class Stock(models.Model):
     list_name = models.CharField(max_length=100)
+    list_id = models.CharField(max_length=16)
     allocation = models.FloatField()
     stock_name = models.CharField(max_length=100)
     investment_date = models.DateField()
@@ -14,7 +15,7 @@ class Stock(models.Model):
 
     def __str__(self):
         formatted_date = self.investment_date.strftime('%Y-%m-%d')
-        return f"{self.user_stock.username} | {self.stock_name}"
+        return f"{self.user_stock.username} | {self.stock_name} | {self.list_name}"
 
 
 
