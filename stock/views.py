@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
+# from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
@@ -18,19 +19,23 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils.crypto import get_random_string
 
+
 class StockCreate(APIView):
+    # @api_view(['GET', 'POST'])
     def post(self, request):
-        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
+        investment_date = datetime.strptime(
+            request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_data = request.data.get('stocks', [])
         user_stock = int(request.data.get('user_stock'))
         list_name = request.data.get('list_name')
-        
+
         # Generate a random list_id
         list_id = get_random_string(length=16)
 
         # Check if the user already has a list with the same list_id
-        existing_list = Stock.objects.filter(user_stock=user_stock, list_id=list_id).exists()
+        existing_list = Stock.objects.filter(
+            user_stock=user_stock, list_id=list_id).exists()
         if existing_list:
             return Response({'error': 'List ID already exists for the user.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,7 +50,8 @@ class StockCreate(APIView):
             params = {
                 'access_key': api_key
             }
-            price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
+            price_response = requests.get(
+                f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
             if price_response.status_code == 200:
                 data = price_response.json()
                 if 'open' in data:
@@ -87,23 +93,26 @@ class StockCreate(APIView):
         return Response("Stocks created successfully", status=status.HTTP_201_CREATED)
 
 
-
 class StockCreateOne(APIView):
+    # @api_view(['GET', 'POST'])
     def post(self, request):
-        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
+
+        investment_date = datetime.strptime(
+            request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_name = request.data.get('stock_name')
         allocation = request.data.get('allocation')
         user_stock = int(request.data.get('user_stock'))
         list_name = request.data.get('list_name')
 
-        # Make API call to retrieve stock price
+    # Make API call to retrieve stock price
         url = os.environ['STOCK_URL']
         api_key = os.environ['STOCK_API_KEY']
         params = {
             'access_key': api_key
         }
-        price_response = requests.get(f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
+        price_response = requests.get(
+            f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
         if price_response.status_code == 200:
             data = price_response.json()
             if 'open' in data:
@@ -136,7 +145,6 @@ class StockCreateOne(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework import generics
 
 class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.DestroyAPIView, generics.ListAPIView):
     serializer_class = StockSerializer
@@ -148,7 +156,8 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
 
     def update(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, data=request.data, many=True)
+        serializer = self.get_serializer(
+            queryset, data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -157,7 +166,6 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
         queryset = self.get_queryset()
         queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 class StockList(generics.ListAPIView):
@@ -182,6 +190,7 @@ class Login(APIView):
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
 class Logout(APIView):
     def post(self, request):
         logout(request)
@@ -195,6 +204,7 @@ class Registration(APIView):
         password = request.data.get('password')
         user = User.objects.create_user(username=username, password=password)
         return Response({'message': 'Registration successful'})
+
 
 class CheckUserLoggedIn(APIView):
     def get(self, request):
