@@ -11,4 +11,7 @@ urlpatterns = [
     path('logout/', Logout.as_view(), name='logout'),
     path('registration/', Registration.as_view(), name='registration'),
     path('check-user/', CheckUserLoggedIn.as_view(), name='check-user-logged-in'),
+    path('stock-data/<slug:list_id>/', StockDataView.as_view(), name='stock_data'),
+    path('stock-data/<slug:list_id>', StockCurrentDataView.as_view(), name='stock_data'),
+
 ]

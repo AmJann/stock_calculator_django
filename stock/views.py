@@ -149,6 +149,7 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
     def partial_update(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         stocks_data = request.data
+        updated_stocks = []
 
         for stock_data in stocks_data:
             stock_id = stock_data.get('id')
@@ -157,9 +158,12 @@ class StockBulkUpdateDeleteRetrieveView(generics.UpdateAPIView, generics.Destroy
                 if stock:
                     serializer = self.get_serializer(stock, data=stock_data, partial=True)
                     serializer.is_valid(raise_exception=True)
-                    serializer.save()
+                    updated_stock = serializer.save()
+                    updated_stocks.append(updated_stock)
 
-        return Response(status=status.HTTP_200_OK)
+        # Return the updated stock data in the response
+        serializer = self.get_serializer(updated_stocks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -212,3 +216,79 @@ class CheckUserLoggedIn(APIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
+def get_today_date():
+    today = datetime.date.today()
+    return today.strftime('%Y-%m-%d')
+
+class StockDataView(APIView):
+    def get(self, request, list_id):
+        selected_portfolios = Stock.objects.filter(list_id=list_id)
+        stock_symbols = [portfolio.stock_name for portfolio in selected_portfolios]
+        stock_data = []
+
+        for symbol in stock_symbols:
+            stock_name = symbol
+            investment_date = stock.investment_date
+
+            # Modify the URL to use HTTP instead of HTTPS
+            url = f'http://api.marketstack.com/v1/eod?access_key=953023c4e78c08dbd62a7fcf39e06946&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
+
+            # Make the API call with the modified URL
+            response = requests.get(url)
+            
+            if response.status_code == 200:
+                data = response.json()
+                stock_data.append(data)
+            if response.status_code == 304:
+                return Response(response.content)
+
+
+
+        return Response(stock_data)
+
+
+
+class StockDataView(APIView):
+    def get(self, request, list_id):
+        selected_portfolios = currentPortfolios.filter(list_id=list_id)
+        stock_data = []
+
+        for stock in selected_portfolios:
+            stock_name = stock.stock_name
+            investment_date = stock.investment_date
+
+            # Modify the URL to use HTTP instead of HTTPS
+            url = f'http://api.marketstack.com/v1/eod?access_key=953023c4e78c08dbd62a7fcf39e06946&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
+
+            # Make the API call with the modified URL
+            response = requests.get(url)
+            data = response.json()
+
+            # Extract the relevant data from the API response and append to stock_data
+            # Adjust this part based on the structure of the API response and the data you need
+            stock_data.append({
+                'stock_name': stock_name,
+                'investment_date': investment_date,
+                'data': data
+            })
+
+        return Response(stock_data)
+
+class StockCurrentDataView(APIView):
+    def get(self, request, list_id):
+        selected_stocks = Stock.objects.filter(list_id=list_id)
+        stock_data = []
+
+        for stock in selected_stocks:
+            stock_symbol = stock_name
+
+            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=7acc9a4809f1f6db994b674a1caf65f2'
+
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                stock_data.append(data)
+        
+        return Response(stock_data)
+
