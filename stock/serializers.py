@@ -19,4 +19,4 @@ class StockSerializer(serializers.ModelSerializer):
 class CurrentStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = currentStock
-        field = ['id','close']
+        field = '__all__'
