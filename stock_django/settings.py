@@ -98,10 +98,15 @@ database_url = env('DATABASE_URL')
 #         'HOST': 'localhost'
 #     }
 # }
+database_url = env('DATABASE_URL')
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL', ""), conn_max_age=60)
+    'default': dj_database_url.config(default=database_url)
 }
+DATABASES['default']['HOST'] = env('PGHOST')
+DATABASES['default']['USER'] = env('PGUSER')
+DATABASES['default']['PASSWORD'] = env('PGPASSWORD')
+DATABASES['default']['PORT'] = env('PGPORT')
 
 
 
