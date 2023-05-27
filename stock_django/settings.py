@@ -85,7 +85,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stock_django.wsgi.application'
 
-
+database_url = env('DATABASE_URL')
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'stock_django.wsgi.application'
 # }
 
 DATABASES = {
-  'default': dj_database_url.config()
+  'default': dj_database_url.config(conn_max_age=600)
 }
 
 
