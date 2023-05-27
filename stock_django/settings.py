@@ -58,7 +58,7 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-ROOT_URLCONF = 'click_django.urls'
+ROOT_URLCONF = 'stock_django.urls'
 
 TEMPLATES = [
     {
@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'click_django.wsgi.application'
+WSGI_APPLICATION = 'stock_django.wsgi.application'
 
 
 # Database
