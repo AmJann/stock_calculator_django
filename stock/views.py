@@ -262,7 +262,7 @@ class StockDataView(APIView):
 
         for symbol in stock_symbols:
             stock_name = symbol
-            investment_date = stock.investment_date
+            investment_date = symbol.investment_date
 
             # Modify the URL to use HTTP instead of HTTPS
             url = f'http://api.marketstack.com/v1/eod?access_key=3c8c20d5a002f6eaba3d82c817db776f&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
