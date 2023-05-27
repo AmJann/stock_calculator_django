@@ -103,7 +103,7 @@ database_url = env('DATABASE_URL')
 # database_url = env('DATABASE_URL')
 
 DATABASES = {
-    'default': dj_database_url.config()
+    'default': dj_database_url.config(default='postgres://stock_backend2_user:V6pGnZrXRGuxfCBxBX2ffdqjjwyZk7gP@dpg-choqpbfdvk4goesb7l10-a.oregon-postgres.render.com/stock_backend2')
 }
 # DATABASES['default']['HOST'] = env('PGHOST')
 # DATABASES['default']['USER'] = env('PGUSER')
@@ -149,7 +149,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT=os.path.join(BASE_DIR, "static")
 
-STATICFILES_STORAGE =  'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE =  STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 
