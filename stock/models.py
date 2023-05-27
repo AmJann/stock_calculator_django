@@ -17,5 +17,8 @@ class Stock(models.Model):
         formatted_date = self.investment_date.strftime('%Y-%m-%d')
         return f"{self.user_stock.username} | {self.stock_name} | {self.list_name}"
 
+class currentStock(models.Model):
+    close = models.FloatField()
+
 
 

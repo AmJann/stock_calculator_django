@@ -15,3 +15,8 @@ class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = '__all__'
+
+class CurrentStockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = currentStock
+        field = ['id','close']
