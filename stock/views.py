@@ -312,9 +312,9 @@ class StockCurrentDataView(APIView):
         stock_data = []
 
         for stock in selected_stocks:
-            stock_symbol = stock_name
+            stock_symbol = stock.stock_name
 
-            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=7acc9a4809f1f6db994b674a1caf65f2'
+            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=e938ebffd18b41ae0e7ee5d20ddb1869'
 
             response = requests.get(url)
 
