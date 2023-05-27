@@ -1,5 +1,6 @@
 .env
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
+stock/__pycache__/
+stock_django/__pycache__/
+*.pyc
