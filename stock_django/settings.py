@@ -82,7 +82,9 @@ WSGI_APPLICATION = 'click_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-'default': dj_database_url.config(default='postgres://stock_backend2_user:V6pGnZrXRGuxfCBxBX2ffdqjjwyZk7gP@dpg-choqpbfdvk4goesb7l10-a.oregon-postgres.render.com/stock_backend2' conn_max_age=600)
+DATABASES = {
+'default': dj_database_url.config(default= conn_max_age=600)
+}
 
 
 # Password validation
