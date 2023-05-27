@@ -32,8 +32,8 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CORS_ALLOW_ALL_ORIGINS =True
-CORS_ALLOW_CREDENTIALS = True
+
+
 
 ALLOWED_HOSTS = ['*']
 
@@ -64,6 +64,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.CommonMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS =True
 
 ROOT_URLCONF = 'stock_django.urls'
 
@@ -98,15 +100,15 @@ database_url = env('DATABASE_URL')
 #         'HOST': 'localhost'
 #     }
 # }
-database_url = env('DATABASE_URL')
+# database_url = env('DATABASE_URL')
 
 DATABASES = {
-    'default': dj_database_url.config(default=database_url)
+    'default': dj_database_url.config()
 }
-DATABASES['default']['HOST'] = env('PGHOST')
-DATABASES['default']['USER'] = env('PGUSER')
-DATABASES['default']['PASSWORD'] = env('PGPASSWORD')
-DATABASES['default']['PORT'] = env('PGPORT')
+# DATABASES['default']['HOST'] = env('PGHOST')
+# DATABASES['default']['USER'] = env('PGUSER')
+# DATABASES['default']['PASSWORD'] = env('PGPASSWORD')
+# DATABASES['default']['PORT'] = env('PGPORT')
 
 
 
