@@ -85,23 +85,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stock_django.wsgi.application'
 
-
+database_url = env('DATABASE_URL')
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'stock',
-        'USER': 'stockuser',
-        'PASSWORD': 'stock',
-        'HOST': 'localhost'
-    }
-}
-
 # DATABASES = {
-#   'default': dj_database_url.config(conn_max_age=600)
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'stock',
+#         'USER': 'stockuser',
+#         'PASSWORD': 'stock',
+#         'HOST': 'localhost'
+#     }
 # }
+
+DATABASES = {
+  'default': dj_database_url.config(conn_max_age=600)
+}
 
 
 # Password validation

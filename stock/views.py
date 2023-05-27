@@ -265,7 +265,7 @@ class StockDataView(APIView):
             investment_date = stock.investment_date
 
             # Modify the URL to use HTTP instead of HTTPS
-            url = f'http://api.marketstack.com/v1/eod?access_key=953023c4e78c08dbd62a7fcf39e06946&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
+            url = f'http://api.marketstack.com/v1/eod?access_key=3c8c20d5a002f6eaba3d82c817db776f&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
 
             # Make the API call with the modified URL
             response = requests.get(url)
@@ -287,26 +287,54 @@ class StockCurrentDataView(APIView):
         for stock in selected_stocks:
             stock_symbol = stock.stock_name
 
-            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=e938ebffd18b41ae0e7ee5d20ddb1869'
+            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=7acc9a4809f1f6db994b674a1caf65f2'
 
             try:
                 response = requests.get(url)
                 response.raise_for_status()  # Raise an exception for non-2xx status codes
 
                 data = response.json()
-                close = data.get('close')
-
-                if close is not None:
-                    stock_data.append({'close': close})
-                    print(
-                        f"Received data for stock {stock_symbol}: close={close}")
-                else:
-                    print(f"No 'close' data found for stock {stock_symbol}")
+                stock_data.append(data)
+                print(f"Received data for stock {stock_symbol}: {data}")
             except requests.exceptions.RequestException as e:
                 # Handle request exceptions (e.g., network error)
                 # You can log the error or handle it in a way that suits your needs
                 print(
                     f"Error retrieving data for stock {stock_symbol}: {str(e)}")
 
-        serializer = CurrentStockSerializer(stock_data, many=True)
-        return Response(serializer.data)
+        return Response(stock_data)
+
+
+class StockCloseValueView(APIView):
+    def get(self, request):
+        access_key = '3c8c20d5a002f6eaba3d82c817db776f'
+        symbols = request.GET.get('symbols')
+
+        if not symbols:
+            return Response({'error': 'Symbols parameter is missing'}, status=400)
+
+        symbol_list = symbols.split(',')
+
+        data_list = []
+
+        for symbol in symbol_list:
+            url = f'http://api.marketstack.com/v1/eod/latest?access_key={access_key}&symbols={symbol}'
+
+            try:
+                response = requests.get(url)
+                response.raise_for_status()  # Raise an exception for non-2xx status codes
+
+                data = response.json()
+                close = data['data'][0]['close']
+                symbol = data['data'][0]['symbol']
+
+                stock_data = {'symbol': symbol, 'close': close}
+                data_list.append(stock_data)
+
+            except requests.exceptions.RequestException as e:
+                # Handle request exceptions (e.g., network error)
+                # You can log the error or handle it in a way that suits your needs
+                error_data = {'symbol': symbol, 'error': str(e)}
+                data_list.append(error_data)
+
+        return Response(data_list)
