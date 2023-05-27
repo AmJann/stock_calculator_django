@@ -304,25 +304,37 @@ class StockCurrentDataView(APIView):
 
 class StockCloseValueView(APIView):
     def get(self, request):
-        access_key = 'you_key'
-        symbol = request.GET.get('symbol')
+        access_key = '3c8c20d5a002f6eaba3d82c817db776f'
+        symbols = request.GET.get('symbols')
 
-        if not symbol:
-            return Response({'error': 'Symbol parameter is missing'}, status=400)
+        if not symbols:
+            return Response({'error': 'Symbols parameter is missing'}, status=400)
 
-        url = f'http://api.marketstack.com/v1/eod/latest?access_key={access_key}&symbols={symbol}'
+        symbol_list = symbols.split(',')
 
-        try:
-            response = requests.get(url)
-            response.raise_for_status() 
+        data_list = []
 
-            data = response.json()
-            close = data['data'][0]['close']
+        for symbol in symbol_list:
+            url = f'http://api.marketstack.com/v1/eod/latest?access_key={access_key}&symbols={symbol}'
 
-            return Response({'close': close})
+            try:
+                response = requests.get(url)
+                response.raise_for_status()  # Raise an exception for non-2xx status codes
 
-        except requests.exceptions.RequestException as e:
-            return Response({'error': str(e)}, status=500)
+                data = response.json()
+                close = data['data'][0]['close']
+                symbol = data['data'][0]['symbol']
+
+                stock_data = {'symbol': symbol, 'close': close}
+                data_list.append(stock_data)
+
+            except requests.exceptions.RequestException as e:
+                # Handle request exceptions (e.g., network error)
+                # You can log the error or handle it in a way that suits your needs
+                error_data = {'symbol': symbol, 'error': str(e)}
+                data_list.append(error_data)
+
+        return Response(data_list)
 
 
 
