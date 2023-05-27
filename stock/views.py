@@ -275,32 +275,6 @@ class StockDataView(APIView):
 
 
 
-class StockDataView(APIView):
-    def get(self, request, list_id):
-        selected_portfolios = currentPortfolios.filter(list_id=list_id)
-        stock_data = []
-
-        for stock in selected_portfolios:
-            stock_name = stock.stock_name
-            investment_date = stock.investment_date
-
-            # Modify the URL to use HTTP instead of HTTPS
-            url = f'http://api.marketstack.com/v1/eod?access_key=953023c4e78c08dbd62a7fcf39e06946&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
-
-            # Make the API call with the modified URL
-            response = requests.get(url)
-            data = response.json()
-
-            # Extract the relevant data from the API response and append to stock_data
-            # Adjust this part based on the structure of the API response and the data you need
-            stock_data.append({
-                'stock_name': stock_name,
-                'investment_date': investment_date,
-                'data': data
-            })
-
-        return Response(stock_data)
-
 class StockCurrentDataView(APIView):
     def get(self, request, list_id):
         selected_stocks = Stock.objects.filter(list_id=list_id)
@@ -311,11 +285,26 @@ class StockCurrentDataView(APIView):
 
             url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=7acc9a4809f1f6db994b674a1caf65f2'
 
-            response = requests.get(url)
+            try:
+                response = requests.get(url)
+                response.raise_for_status()  # Raise an exception for non-2xx status codes
 
-            if response.status_code == 200:
                 data = response.json()
-                stock_data.append(data)
+                close = data.get('close')
+               
+                if close is not None:
+                    stock_data.append({'close': close})
+                    print(f"Received data for stock {stock_symbol}: close={close}")
+                else:
+                    print(f"No 'close' data found for stock {stock_symbol}")
+            except requests.exceptions.RequestException as e:
+                # Handle request exceptions (e.g., network error)
+                # You can log the error or handle it in a way that suits your needs
+                print(f"Error retrieving data for stock {stock_symbol}: {str(e)}")
+
+        serializer = CurrentStockSerializer(stock_data, many=True)
+        return Response(serializer.data)
+
         
-        return Response(stock_data)
+
 
