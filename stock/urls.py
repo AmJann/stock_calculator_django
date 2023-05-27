@@ -13,5 +13,6 @@ urlpatterns = [
     path('check-user/', CheckUserLoggedIn.as_view(), name='check-user-logged-in'),
     path('stock-data/<slug:list_id>/', StockDataView.as_view(), name='stock_data'),
     path('stock-data-current/<slug:list_id>', StockCurrentDataView.as_view(), name='stock_data_current'),
+    path('stock-close-value/', StockCloseValueView.as_view(), name='stock-close-value'),
 
 ]
