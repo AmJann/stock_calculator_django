@@ -27,8 +27,7 @@ from django.contrib.auth.models import User
 
 class StockCreate(APIView):
     def post(self, request):
-        investment_date = datetime.strptime(
-            request.data['investment_date'], '%Y-%m-%d').date()
+        investment_date = datetime.strptime(request.data['investment_date'], '%Y-%m-%d').date()
         initial_balance = float(request.data.get('initial_balance'))
         stock_data = request.data.get('stocks', [])
         user_stock_id = int(request.data.get('user_stock'))
@@ -59,7 +58,7 @@ class StockCreate(APIView):
             url = os.environ['STOCK_URL']
             api_key = os.environ['STOCK_API_KEY']
             params = {
-                'access_key': api_key
+                'access_key': '7105c5a2fc23220b0bf462d4e27057ee'
             }
             price_response = requests.get(
                 f"{url}/tickers/{stock_name}/eod/{investment_date}", params)
@@ -93,6 +92,7 @@ class StockCreate(APIView):
             if serializer.is_valid():
                 stocks.append(serializer.validated_data)
             else:
+                print(stocks)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
@@ -258,7 +258,7 @@ class StockDataView(APIView):
             investment_date = stock.investment_date
 
             # Modify the URL to use HTTP instead of HTTPS
-            url = f'http://api.marketstack.com/v1/eod?access_key=3c8c20d5a002f6eaba3d82c817db776f&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
+            url = f'http://api.marketstack.com/v1/eod?access_key=7105c5a2fc23220b0bf462d4e27057ee&symbols={stock_name}&date_from={investment_date}&date_to={get_today_date()}'
 
             # Make the API call with the modified URL
             response = requests.get(url)
@@ -284,7 +284,7 @@ class StockCurrentDataView(APIView):
         for stock in selected_stocks:
             stock_symbol = stock.stock_name
             print(stock_data)
-            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=7acc9a4809f1f6db994b674a1caf65f2'
+            url = f'http://api.marketstack.com/v1/tickers/{stock_symbol}/eod/latest?access_key=77105c5a2fc23220b0bf462d4e27057ee'
 
             try:
                 response = requests.get(url)
@@ -304,7 +304,7 @@ class StockCurrentDataView(APIView):
 
 class StockCloseValueView(APIView):
     def get(self, request):
-        access_key = '3c8c20d5a002f6eaba3d82c817db776f'
+        access_key = '7105c5a2fc23220b0bf462d4e27057ee'
         symbols = request.GET.get('symbols')
 
         if not symbols:
